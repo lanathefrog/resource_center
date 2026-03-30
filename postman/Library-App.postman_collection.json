@@ -1,0 +1,1065 @@
+{
+  "info": {
+    "name": "Library App API (REST + GraphQL)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "REST",
+      "item": [
+        {
+          "name": "REST - Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin login status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "pm.test('Admin role is returned', function () { pm.expect(jsonResponse.user.role).to.eql('admin'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin List Books (save activeBookId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('List books status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "const books = jsonResponse.books || [];",
+                  "pm.test('Books returned', function () { pm.expect(books.length).to.be.above(0); });",
+                  "const active = books.find((book) => book.active);",
+                  "pm.environment.set('activeBookId', (active && (active.id || active._id)) || '');",
+                  "pm.test('Saved activeBookId', function () { pm.expect(pm.environment.get('activeBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Create Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create book status is 201', function () { pm.response.to.have.status(201); });",
+                  "const jsonResponse = pm.response.json();",
+                  "const createdBook = jsonResponse.book || {};",
+                  "pm.environment.set('createdBookId', createdBook.id || createdBook._id || '');",
+                  "pm.test('Saved createdBookId', function () { pm.expect(pm.environment.get('createdBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Newman REST Test Book\",\n  \"author\": \"QA Bot\",\n  \"genreName\": \"Testing\",\n  \"publishedYear\": 2024,\n  \"description\": \"Created by automated REST test\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Update Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update book status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "pm.test('Book title updated', function () { pm.expect(jsonResponse.book.title).to.eql('Newman REST Test Book Updated'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Newman REST Test Book Updated\",\n  \"author\": \"QA Bot\",\n  \"genreName\": \"Testing\",\n  \"publishedYear\": 2024,\n  \"description\": \"Updated by automated REST test\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{createdBookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                "{{createdBookId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Toggle Book Active",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Toggle status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "pm.test('Book active flag exists', function () { pm.expect(typeof jsonResponse.book.active).to.eql('boolean'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{createdBookId}}/toggle-active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                "{{createdBookId}}",
+                "toggle-active"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Delete Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/books/{{createdBookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books",
+                "{{createdBookId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Reserve Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin reserve is forbidden (403)', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{activeBookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{activeBookId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - Admin Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin logout status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User login status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "pm.test('User role is user', function () { pm.expect(jsonResponse.user.role).to.eql('user'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User List Active Books (save userBookId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User books status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "const books = jsonResponse.books || [];",
+                  "pm.test('User has at least one available book', function () { pm.expect(books.length).to.be.above(0); });",
+                  "const first = books[0] || {};",
+                  "pm.environment.set('userBookId', first.id || first._id || '');",
+                  "pm.test('Saved userBookId', function () { pm.expect(pm.environment.get('userBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/books",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "books"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User Reserve Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User reserve status is 201', function () { pm.response.to.have.status(201); });",
+                  "const jsonResponse = pm.response.json();",
+                  "pm.environment.set('reservationId', (jsonResponse.reservation.id || jsonResponse.reservation._id || ''));",
+                  "pm.test('Saved reservationId', function () { pm.expect(pm.environment.get('reservationId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{userBookId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{userBookId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User My Reservations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('My reservations status is 200', function () { pm.response.to.have.status(200); });",
+                  "const jsonResponse = pm.response.json();",
+                  "const selected = (jsonResponse.reservations || []).find((item) => (item.book && (item.book.id || item.book._id)) === pm.environment.get('userBookId'));",
+                  "pm.test('Reserved book exists in user reservations', function () { pm.expect(selected).to.exist; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User Cancel Reservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cancel reservation status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/reservations/{{reservationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reservations",
+                "{{reservationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "REST - User Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User logout status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "GraphQL",
+      "item": [
+        {
+          "name": "GraphQL - Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin login status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "pm.test('Admin role returned', function () { pm.expect(payload.data.login.user.role).to.eql('admin'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { message user { id role } } }\",\n  \"variables\": {\n    \"input\": {\n      \"email\": \"{{adminEmail}}\",\n      \"password\": \"{{adminPassword}}\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Books Query (save activeBookId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Books query status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "const books = payload.data.books || [];",
+                  "const active = books.find((book) => book.active);",
+                  "pm.environment.set('activeBookId', (active && active.id) || '');",
+                  "pm.test('Saved activeBookId', function () { pm.expect(pm.environment.get('activeBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { books { id title active } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Create Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Create mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "const book = payload.data.createBook.book || {};",
+                  "pm.environment.set('createdBookId', book.id || '');",
+                  "pm.test('Saved createdBookId', function () { pm.expect(pm.environment.get('createdBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CreateBook($input: BookInput!) { createBook(input: $input) { message book { id title active } } }\",\n  \"variables\": {\n    \"input\": {\n      \"title\": \"Newman GQL Test Book\",\n      \"author\": \"QA Bot\",\n      \"genreName\": \"Testing\",\n      \"publishedYear\": 2024,\n      \"description\": \"Created by GraphQL automated test\",\n      \"active\": true\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Update Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Update mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "pm.test('Book title updated', function () { pm.expect(payload.data.updateBook.book.title).to.eql('Newman GQL Test Book Updated'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation UpdateBook($id: ID!, $input: BookInput!) { updateBook(id: $id, input: $input) { message book { id title active } } }\",\n  \"variables\": {\n    \"id\": \"{{createdBookId}}\",\n    \"input\": {\n      \"title\": \"Newman GQL Test Book Updated\",\n      \"author\": \"QA Bot\",\n      \"genreName\": \"Testing\",\n      \"publishedYear\": 2024,\n      \"description\": \"Updated by GraphQL automated test\",\n      \"active\": true\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Toggle Book Active",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Toggle mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "pm.test('Toggle returns boolean active', function () { pm.expect(typeof payload.data.toggleBookActive.book.active).to.eql('boolean'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation ToggleBook($id: ID!) { toggleBookActive(id: $id) { message book { id active } } }\",\n  \"variables\": {\n    \"id\": \"{{createdBookId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Delete Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Delete mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation DeleteBook($id: ID!) { deleteBook(id: $id) { message } }\",\n  \"variables\": {\n    \"id\": \"{{createdBookId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Reserve Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reserve forbidden for admin', function () {",
+                  "  const payload = pm.response.json();",
+                  "  pm.expect(Array.isArray(payload.errors)).to.eql(true);",
+                  "  pm.expect(payload.errors.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation ReserveBook($bookId: ID!) { reserveBook(bookId: $bookId) { message reservation { id } } }\",\n  \"variables\": {\n    \"bookId\": \"{{activeBookId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - Admin Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin logout status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { logout { message } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User login status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "pm.test('User role returned', function () { pm.expect(payload.data.login.user.role).to.eql('user'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { message user { id role } } }\",\n  \"variables\": {\n    \"input\": {\n      \"email\": \"{{userEmail}}\",\n      \"password\": \"{{userPassword}}\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User Books Query (save userBookId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User books query status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "const books = payload.data.books || [];",
+                  "pm.test('User has at least one available book', function () { pm.expect(books.length).to.be.above(0); });",
+                  "pm.environment.set('userBookId', (books[0] && books[0].id) || '');",
+                  "pm.test('Saved userBookId', function () { pm.expect(pm.environment.get('userBookId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { books { id title active } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User Reserve Book",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reserve mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "pm.environment.set('reservationId', payload.data.reserveBook.reservation.id || '');",
+                  "pm.test('Saved reservationId', function () { pm.expect(pm.environment.get('reservationId')).to.not.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation ReserveBook($bookId: ID!) { reserveBook(bookId: $bookId) { message reservation { id } } }\",\n  \"variables\": {\n    \"bookId\": \"{{userBookId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User My Reservations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('myReservations query status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);",
+                  "const selected = (payload.data.myReservations || []).find((item) => item.book && item.book.id === pm.environment.get('userBookId'));",
+                  "pm.test('Reserved book exists in GraphQL myReservations', function () { pm.expect(selected).to.exist; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { myReservations { id book { id title } } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User Cancel Reservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cancel mutation status is 200', function () { pm.response.to.have.status(200); });",
+                  "const payload = pm.response.json();",
+                  "pm.expect(payload.errors).to.eql(undefined);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CancelReservation($id: ID!) { cancelReservation(id: $id) { message reservation { id } } }\",\n  \"variables\": {\n    \"id\": \"{{reservationId}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GraphQL - User Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User logout status is 200', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { logout { message } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@library.local"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin12345!"
+    },
+    {
+      "key": "userEmail",
+      "value": "user@library.local"
+    },
+    {
+      "key": "userPassword",
+      "value": "User12345!"
+    },
+    {
+      "key": "activeBookId",
+      "value": ""
+    },
+    {
+      "key": "createdBookId",
+      "value": ""
+    },
+    {
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "key": "userBookId",
+      "value": ""
+    }
+  ]
+}

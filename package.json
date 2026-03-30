@@ -1,0 +1,20 @@
+{
+  "name": "library-resource-center",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server run start",
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "test:api:postman": "newman run postman/Library-App.postman_collection.json -e postman/Library-App.local.postman_environment.json -r cli",
+    "test:api:postman:html": "newman run postman/Library-App.postman_collection.json -e postman/Library-App.local.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export postman/newman-report.html"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
